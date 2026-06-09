@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PinVault — Descubre e inspírate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<nav class="navbar" id="navbar"></nav>
+
+<main class="main">
+  <div class="filter-bar" id="filter-bar">
+    <button class="filter-btn active" data-cat="Todos">Todos</button>
+    <button class="filter-btn" data-cat="Diseño">Diseño</button>
+    <button class="filter-btn" data-cat="Fotografía">Fotografía</button>
+    <button class="filter-btn" data-cat="Arte">Arte</button>
+    <button class="filter-btn" data-cat="Arquitectura">Arquitectura</button>
+    <button class="filter-btn" data-cat="Gastronomía">Gastronomía</button>
+    <button class="filter-btn" data-cat="Tecnología">Tecnología</button>
+    <button class="filter-btn" data-cat="Moda">Moda</button>
+    <button class="filter-btn" data-cat="Hogar">Hogar</button>
+    <button class="filter-btn" data-cat="Aventura">Aventura</button>
+  </div>
+
+  <div class="masonry-grid" id="pin-grid"></div>
+
+  <div id="empty-state" class="empty-state" style="display:none">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <h3>Sin resultados</h3>
+    <p>No encontramos publicaciones para tu búsqueda.</p>
+  </div>
+</main>
+
+<!-- Upload Modal -->
+<div id="upload-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:32px;max-width:480px;width:100%;position:relative">
+    <button onclick="closeUpload()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text-muted);cursor:pointer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:24px">Crear publicación</h2>
+    <div class="form-group">
+      <label class="form-label">URL de imagen *</label>
+      <input type="url" class="form-input" id="upload-url" placeholder="https://images.unsplash.com/...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Título *</label>
+      <input type="text" class="form-input" id="upload-title" placeholder="Describe tu publicación">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descripción</label>
+      <textarea class="form-input" id="upload-desc" rows="3" style="resize:vertical" placeholder="Agrega más contexto…"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Categoría</label>
+        <select class="form-input" id="upload-cat">
+          <option>Diseño</option><option>Fotografía</option><option>Arte</option>
+          <option>Arquitectura</option><option>Gastronomía</option><option>Tecnología</option>
+          <option>Moda</option><option>Hogar</option><option>Aventura</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Etiquetas</label>
+        <input type="text" class="form-input" id="upload-tags" placeholder="tag1, tag2">
+      </div>
+    </div>
+    <button class="form-submit" style="margin-top:20px" onclick="submitPin()">Publicar</button>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="js/app.js"></script>
+<script>
+  let currentCat = 'Todos';
+  let currentQuery = '';
+
+  function init() {
+    renderNavbar('index');
+
+    const params = new URLSearchParams(window.location.search);
+    currentQuery = params.get('q') || '';
+    const searchInput = document.getElementById('nav-search-input');
+    if (searchInput && currentQuery) searchInput.value = currentQuery;
+
+    if (window.location.hash === '#upload') openUpload();
+
+    renderGrid();
+    setupFilters();
+
+    document.getElementById('upload-btn') && document.getElementById('upload-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      openUpload();
+    });
+  }
+
+  function setupFilters() {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCat = btn.dataset.cat;
+        renderGrid();
+      });
+    });
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('pin-grid');
+    const empty = document.getElementById('empty-state');
+    let pins = DB.getPins();
+
+    if (currentCat !== 'Todos') pins = pins.filter(p => p.category === currentCat);
+    if (currentQuery) {
+      const q = currentQuery.toLowerCase();
+      pins = pins.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        (p.tags || []).some(t => t.toLowerCase().includes(q)) ||
+        p.username.toLowerCase().includes(q)
+      );
+    }
+
+    if (pins.length === 0) {
+      grid.innerHTML = '';
+      empty.style.display = 'block';
+    } else {
+      empty.style.display = 'none';
+      grid.innerHTML = pins.map(renderPinCard).join('');
+    }
+  }
+
+  function openUpload() {
+    const user = DB.getCurrentUser();
+    if (!user) { window.location.href = 'login.html'; return; }
+    document.getElementById('upload-modal').style.display = 'flex';
+  }
+
+  function closeUpload() {
+    document.getElementById('upload-modal').style.display = 'none';
+    history.replaceState(null, '', 'index.html');
+  }
+
+  function submitPin() {
+    const user = DB.getCurrentUser();
+    if (!user) return;
+    const url = document.getElementById('upload-url').value.trim();
+    const title = document.getElementById('upload-title').value.trim();
+    if (!url || !title) { Utils.showToast('URL y título son obligatorios', 'error'); return; }
+
+    const tags = document.getElementById('upload-tags').value
+      .split(',').map(t => t.trim()).filter(Boolean);
+
+    const pin = {
+      id: 'p_' + Date.now(),
+      userId: user.id,
+      username: user.username,
+      displayName: user.displayName,
+      title,
+      description: document.getElementById('upload-desc').value.trim(),
+      category: document.getElementById('upload-cat').value,
+      tags,
+      imageUrl: url,
+      likes: 0,
+      saves: 0,
+      createdAt: new Date().toISOString()
+    };
+
+    DB.addPin(pin);
+    closeUpload();
+    renderGrid();
+    Utils.showToast('¡Publicación creada con éxito!');
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

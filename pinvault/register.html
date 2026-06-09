@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear cuenta — PinVault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <style>
+    .strength-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .strength-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s ease, background 0.3s ease;
+      width: 0;
+    }
+    .strength-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .avatar-preview {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 auto 16px;
+      transition: background 0.3s ease;
+      background: linear-gradient(135deg, #e8445a, #a855f7);
+    }
+    .terms {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .terms input[type="checkbox"] {
+      margin-top: 2px;
+      accent-color: var(--accent);
+    }
+    .terms label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      cursor: pointer;
+    }
+    .terms a { color: var(--accent); }
+    .progress-steps {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .step-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border-hover);
+      transition: background 0.3s;
+    }
+    .step-dot.active { background: var(--accent); }
+    .step-dot.done { background: #22c55e; }
+  </style>
+</head>
+<body>
+
+<div class="form-page">
+  <div class="form-card" style="max-width:440px">
+    <div class="form-header">
+      <a class="form-logo" href="index.html">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" fill="#e8445a"/><path d="M14 6 C14 6, 8 6, 8 12 C8 17, 14 22, 14 22 C14 22, 20 17, 20 12 C20 6, 14 6" fill="white" opacity="0.9"/><circle cx="14" cy="12" r="3" fill="#e8445a"/></svg>
+        PinVault
+      </a>
+      <div class="avatar-preview" id="avatar-preview">PV</div>
+      <h1 class="form-title">Crea tu cuenta</h1>
+      <p class="form-subtitle">Únete a miles de personas que descubren e inspiran cada día</p>
+    </div>
+
+    <div class="progress-steps">
+      <div class="step-dot active" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+      <div class="step-dot" id="dot-3"></div>
+    </div>
+
+    <form id="register-form" novalidate>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label class="form-label" for="first-name">Nombre</label>
+          <input type="text" class="form-input" id="first-name" name="firstName" placeholder="Ana" autocomplete="given-name">
+          <span class="form-error" id="err-first-name">Ingresa tu nombre</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="last-name">Apellido</label>
+          <input type="text" class="form-input" id="last-name" name="lastName" placeholder="Torres" autocomplete="family-name">
+          <span class="form-error" id="err-last-name">Ingresa tu apellido</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="username">Nombre de usuario</label>
+        <div class="input-wrap">
+          <input type="text" class="form-input" id="username" name="username" placeholder="ana.torres" autocomplete="username" style="padding-left:28px">
+          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px;pointer-events:none">@</span>
+        </div>
+        <span class="form-error" id="err-username">Mín. 3 caracteres, solo letras, números y punto</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Correo electrónico</label>
+        <input type="email" class="form-input" id="email" name="email" placeholder="ana@ejemplo.com" autocomplete="email">
+        <span class="form-error" id="err-email">Correo no válido</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Contraseña</label>
+        <div class="input-wrap">
+          <input type="password" class="form-input" id="password" name="password" placeholder="Mín. 8 caracteres" autocomplete="new-password" style="padding-right:42px">
+          <button type="button" class="toggle-pw" id="toggle-pw" aria-label="Mostrar contraseña">
+            <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+        <p class="strength-label" id="strength-label">Ingresa una contraseña</p>
+        <span class="form-error" id="err-password">Mín. 8 caracteres</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="confirm-password">Confirmar contraseña</label>
+        <div class="input-wrap">
+          <input type="password" class="form-input" id="confirm-password" name="confirmPassword" placeholder="Repite la contraseña" autocomplete="new-password" style="padding-right:42px">
+          <button type="button" class="toggle-pw" id="toggle-confirm" aria-label="Mostrar contraseña">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </div>
+        <span class="form-error" id="err-confirm">Las contraseñas no coinciden</span>
+      </div>
+
+      <div class="terms">
+        <input type="checkbox" id="terms-check">
+        <label for="terms-check">Acepto los <a href="#">Términos de uso</a> y la <a href="#">Política de privacidad</a> de PinVault</label>
+      </div>
+      <span class="form-error" id="err-terms" style="margin-top:-8px">Debes aceptar los términos</span>
+
+      <button type="submit" class="form-submit" id="submit-btn">Crear cuenta</button>
+
+      <span class="form-error" id="err-global" style="text-align:center;display:none;margin-top:8px"></span>
+    </form>
+
+    <div class="form-footer">
+      ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="js/app.js"></script>
+<script>
+  // Redirect if already logged in
+  if (DB.getCurrentUser()) window.location.href = 'index.html';
+
+  // Avatar live preview
+  function updatePreview() {
+    const fn = document.getElementById('first-name').value.trim();
+    const ln = document.getElementById('last-name').value.trim();
+    const name = (fn + ' ' + ln).trim() || 'PV';
+    const el = document.getElementById('avatar-preview');
+    el.textContent = Utils.getInitials(name) || 'PV';
+    el.style.background = Utils.avatarGradient(name);
+  }
+
+  document.getElementById('first-name').addEventListener('input', updatePreview);
+  document.getElementById('last-name').addEventListener('input', updatePreview);
+
+  // Password strength
+  document.getElementById('password').addEventListener('input', function () {
+    const v = this.value;
+    const fill = document.getElementById('strength-fill');
+    const label = document.getElementById('strength-label');
+    let score = 0;
+    if (v.length >= 8) score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+
+    const pct = (score / 4) * 100;
+    const colors = ['#e84444', '#f59e0b', '#22c55e', '#22c55e'];
+    const labels = ['Muy débil', 'Débil', 'Buena', 'Fuerte'];
+    fill.style.width = pct + '%';
+    fill.style.background = colors[Math.max(score - 1, 0)] || '#e84444';
+    label.textContent = v.length ? labels[Math.max(score - 1, 0)] : 'Ingresa una contraseña';
+
+    // Step dots
+    document.getElementById('dot-1').className = 'step-dot ' + (score >= 1 ? 'done' : 'active');
+    document.getElementById('dot-2').className = 'step-dot ' + (score >= 2 ? 'done' : score >= 1 ? 'active' : '');
+    document.getElementById('dot-3').className = 'step-dot ' + (score >= 3 ? 'done' : score >= 2 ? 'active' : '');
+  });
+
+  // Toggle password visibility
+  function setupToggle(btnId, inputId) {
+    document.getElementById(btnId).addEventListener('click', () => {
+      const input = document.getElementById(inputId);
+      input.type = input.type === 'password' ? 'text' : 'password';
+    });
+  }
+  setupToggle('toggle-pw', 'password');
+  setupToggle('toggle-confirm', 'confirm-password');
+
+  // Form validation & submit
+  function showError(id, show) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('visible', show);
+    const inputId = id.replace('err-', '');
+    const input = document.querySelector(`#${inputId}, [name="${inputId}"]`);
+    if (input) input.classList.toggle('error', show);
+  }
+
+  document.getElementById('register-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    let valid = true;
+
+    const firstName = document.getElementById('first-name').value.trim();
+    const lastName = document.getElementById('last-name').value.trim();
+    const username = document.getElementById('username').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm-password').value;
+    const terms = document.getElementById('terms-check').checked;
+
+    showError('err-first-name', !firstName);
+    if (!firstName) valid = false;
+
+    showError('err-last-name', !lastName);
+    if (!lastName) valid = false;
+
+    const usernameValid = /^[a-zA-Z0-9._]{3,}$/.test(username);
+    showError('err-username', !usernameValid);
+    if (!usernameValid) valid = false;
+
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    showError('err-email', !emailValid);
+    if (!emailValid) valid = false;
+
+    showError('err-password', password.length < 8);
+    if (password.length < 8) valid = false;
+
+    showError('err-confirm', password !== confirm);
+    if (password !== confirm) valid = false;
+
+    showError('err-terms', !terms);
+    if (!terms) valid = false;
+
+    if (!valid) return;
+
+    const btn = document.getElementById('submit-btn');
+    btn.textContent = 'Creando cuenta…';
+    btn.disabled = true;
+
+    setTimeout(() => {
+      const result = DB.register({
+        firstName, lastName,
+        displayName: firstName + ' ' + lastName,
+        username, email, password
+      });
+
+      if (result.error) {
+        const errEl = document.getElementById('err-global');
+        errEl.textContent = result.error;
+        errEl.style.display = 'block';
+        btn.textContent = 'Crear cuenta';
+        btn.disabled = false;
+      } else {
+        DB.setCurrentUser(result.user);
+        Utils.showToast('¡Bienvenido/a a PinVault, ' + result.user.firstName + '!');
+        setTimeout(() => window.location.href = 'index.html', 1000);
+      }
+    }, 600);
+  });
+</script>
+</body>
+</html>
